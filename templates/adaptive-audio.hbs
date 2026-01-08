@@ -1,0 +1,70 @@
+<form class="adaptive-audio-form">
+    <div class="form-group">
+        <h3>{{localize "adaptive-audio.ui.lowIntensityTrack"}}</h3>
+        <div class="file-picker-container">
+            <input type="text" name="lowTrackPath" value="{{lowTrackPath}}" placeholder="{{localize 'adaptive-audio.ui.selectTrack'}}" readonly />
+            <button type="button" class="file-picker" data-type="audio" data-target="lowTrackPath">
+                <i class="fas fa-file-import"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <h3>{{localize "adaptive-audio.ui.highIntensityTrack"}}</h3>
+        <div class="file-picker-container">
+            <input type="text" name="highTrackPath" value="{{highTrackPath}}" placeholder="{{localize 'adaptive-audio.ui.selectTrack'}}" readonly />
+            <button type="button" class="file-picker" data-type="audio" data-target="highTrackPath">
+                <i class="fas fa-file-import"></i>
+            </button>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="form-group">
+        <label>
+            {{localize "adaptive-audio.ui.intensity"}}: <span data-intensity-value>{{intensity}}</span>%
+        </label>
+        <input type="range" name="intensity" min="0" max="100" step="1" value="{{intensity}}" />
+        <div class="intensity-labels">
+            <span>Low</span>
+            <span>High</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>
+            {{localize "adaptive-audio.ui.volume"}}: <span data-volume-value>{{masterVolume}}</span>%
+        </label>
+        <input type="range" name="masterVolume" min="0" max="100" step="1" value="{{masterVolume}}" />
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="loop" {{#if loop}}checked{{/if}} />
+            {{localize "adaptive-audio.ui.loop"}}
+        </label>
+    </div>
+
+    <hr />
+
+    <div class="playback-controls">
+        <button type="button" data-action="play" {{#unless canPlay}}disabled{{/unless}}>
+            <i class="fas fa-play"></i> {{localize "adaptive-audio.ui.play"}}
+        </button>
+        <button type="button" data-action="pause" {{#unless isPlaying}}disabled{{/unless}}>
+            <i class="fas fa-pause"></i> {{localize "adaptive-audio.ui.pause"}}
+        </button>
+        <button type="button" data-action="stop" {{#if isStopped}}disabled{{/if}}>
+            <i class="fas fa-stop"></i> {{localize "adaptive-audio.ui.stop"}}
+        </button>
+    </div>
+
+    <div class="status-display">
+        <strong>Status:</strong> <span class="status-text {{#if isPlaying}}playing{{else if isPaused}}paused{{else}}stopped{{/if}}">{{statusText}}</span>
+    </div>
+
+    {{#unless canPlay}}
+    <p class="notes">{{localize "adaptive-audio.ui.noTracksLoaded"}}</p>
+    {{/unless}}
+</form>

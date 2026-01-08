@@ -1,0 +1,35 @@
+{
+  "id": "adaptive-audio",
+  "title": "Adaptive Audio",
+  "description": "Play synchronized dual-intensity audio tracks with dynamic mixing based on intensity settings. Perfect for adaptive music that responds to combat or scene intensity.",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "JoshBrodieNZ",
+      "discord": "joshbrodienz",
+      "url": "https://www.patreon.com/cw/LudibriumVTT"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  "styles": [
+    "styles/adaptive-audio.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "languages/en.json"
+    }
+  ],
+  "url": "https://github.com/Ludibrium-VTT/adaptive-audio",
+  "manifest": "https://github.com/Ludibrium-VTT/adaptive-audio/releases/latest/download/module.json",
+  "download": "https://github.com/Ludibrium-VTT/adaptive-audio/releases/latest/download/adaptive-audio.zip",
+  "bugs": "https://github.com/Ludibrium-VTT/adaptive-audio/issues",
+  "readme": "README.md"
+}
