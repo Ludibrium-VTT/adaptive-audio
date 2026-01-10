@@ -13,7 +13,7 @@ A Foundry VTT module that enables seamless adaptive audio playback with multi-la
     - **Ovani Auto-Config**: Automatically detects and fills "Intensity 1" and "Intensity 2" layers when you select a "Main" track.
     - **Preload**: One-click preload for all adaptive tracks to ensure instant playback.
 - **Combat Integration**: Automatically adjust intensity when combat starts/ends.
-- **Client-Side Sync**: Each player controls their own adaptive audio locally with drift monitoring.
+- **Synchronized Experience**: Audio intensity is globally synchronized by the GM, while mixing happens locally on each client for high-performance gapless playback.
 
 ## Installation
 
