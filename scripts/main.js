@@ -49,6 +49,41 @@ Hooks.once("init", () => {
     Hooks.on("getPlaylistContextOptions", contextMenuCallback);
     // V10-V12 fallback
     Hooks.on("getPlaylistDirectoryEntryContext", contextMenuCallback);
+
+    // REGISTER SOUND CONTEXT MENU HOOK
+    Hooks.on("getPlaylistSoundContextOptions", (app, options) => {
+        options.push({
+            name: "Preload Adaptive Track",
+            icon: '<i class="fas fa-download"></i>',
+            condition: (li) => {
+                const element = $(li);
+                const playlistId = element.data("playlist-id");
+                const soundId = element.data("sound-id");
+                
+                if (!playlistId || !soundId) return false;
+                
+                const playlist = game.playlists.get(playlistId);
+                const sound = playlist?.sounds.get(soundId);
+                
+                if (!sound) return false;
+                
+                const midPath = sound.getFlag(MODULE_ID, "midIntensityPath");
+                const lowPath = sound.getFlag(MODULE_ID, "lowIntensityPath");
+                return !!(midPath || lowPath);
+            },
+            callback: (li) => {
+                const element = $(li);
+                const playlistId = element.data("playlist-id");
+                const soundId = element.data("sound-id");
+                const playlist = game.playlists.get(playlistId);
+                const sound = playlist?.sounds.get(soundId);
+                
+                if (game.adaptiveAudio?.player && sound) {
+                     game.adaptiveAudio.player.preloadSound(sound);
+                }
+            }
+        });
+    });
 });
 
 Hooks.once("ready", () => {

@@ -208,6 +208,29 @@ debug("Restoring playback...");
             this._stopAdaptiveSound(sound.id, true);
         });
 
+        // CRITICAL: When copying/dragging a playing sound, ensure the new copy starts Paused
+        Hooks.on("preCreatePlaylistSound", (sound, data, options, userId) => {
+            const playlist = sound.parent;
+            const isAdaptive = playlist?.getFlag(MODULE_ID, "isAdaptive");
+            
+            // Check if this is an adaptive sound (checks parent playlist flag or sound flags)
+            // Note: During creation, sound flags might be in `data` or `sound` depending on how it's constructed
+            // But we can check data.flags or the sound object itself
+            const midPath = sound.getFlag(MODULE_ID, "midIntensityPath") ?? data.flags?.[MODULE_ID]?.midIntensityPath;
+            const lowPath = sound.getFlag(MODULE_ID, "lowIntensityPath") ?? data.flags?.[MODULE_ID]?.lowIntensityPath;
+
+            // Only interfere if it is an adaptive sound context
+            // If the playlist is adaptive OR the sound itself has adaptive path flags
+            if (isAdaptive || midPath || lowPath) {
+                // If the sound is being created with playing=true (e.g. cloned from a playing sound)
+                if (data.playing) {
+                     debug(`Intercepted preCreatePlaylistSound for ${sound.name} - Forcing playing=false for copy`);
+                     // Mutate the data object directly to prevent it starting as playing
+                     sound.updateSource({ playing: false });
+                }
+            }
+        });
+
         // Clean up when playlist is deleted (stops all contained sounds)
         Hooks.on("deletePlaylist", (playlist, options, userId) => {
             debug(`deletePlaylist detected for: ${playlist.name} (${playlist.id})`);
@@ -302,6 +325,32 @@ debug("Restoring playback...");
         const count = await this._preloadPlaylistInternal(playlist);
 
         ui.notifications.info(`Adaptive Audio: ${playlist.name} preload complete.`);
+    }
+
+    /**
+     * Preload adaptive sound layers for a specific sound
+     * @param {PlaylistSound} sound 
+     */
+    async preloadSound(sound) {
+        if (!sound) return;
+
+        debug(`Preloading sound: ${sound.name}`);
+        ui.notifications.info(`Adaptive Audio: Preloading ${sound.name}...`);
+
+        const highPath = sound.path;
+        const midPath = sound.getFlag(MODULE_ID, "midIntensityPath");
+        const lowPath = sound.getFlag(MODULE_ID, "lowIntensityPath");
+        
+        let count = 0;
+        const promises = [];
+        
+        if (highPath) promises.push(this._preloadSound(highPath).then(() => count++));
+        if (midPath) promises.push(this._preloadSound(midPath).then(() => count++));
+        if (lowPath) promises.push(this._preloadSound(lowPath).then(() => count++));
+        
+        await Promise.all(promises);
+        
+        ui.notifications.info(`Adaptive Audio: Preloaded ${count} layers for ${sound.name}`);
     }
 
     /**
@@ -452,6 +501,25 @@ debug("Restoring playback...");
         if (this.loadingSounds.has(sound.id)) {
             debug(`Sound "${sound.name}" is already loading, skipping duplicate request`);
             return;
+        }
+
+        // ENFORCE PLAYLIST EXCLUSIVITY
+        // Because we block the native "stop" updates in preUpdatePlaylistSound, 
+        // we must manually ensure other sounds stop when starting a new one (unless Simultaneous)
+        const playlist = sound.parent;
+        if (playlist && playlist.mode !== CONST.PLAYLIST_MODES.SIMULTANEOUS) {
+             const soundsToStop = [];
+             for (const [otherId, entry] of this.playingSounds) {
+                 if (entry.sound.parent?.id === playlist.id && otherId !== sound.id) {
+                     soundsToStop.push(otherId);
+                 }
+             }
+             
+             for (const id of soundsToStop) {
+                 const entry = this.playingSounds.get(id);
+                 debug(`Enforcing playlist exclusivity: Stopping ${entry?.sound?.name}`);
+                 this._stopAdaptiveSound(id);
+             }
         }
 
         const startTime = performance.now();

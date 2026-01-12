@@ -120,8 +120,8 @@ export function injectSoundConfig(app, html, data) {
             debug("Pattern matched!");
             const midInput = html.find('input[name="flags.adaptive-audio.midIntensityPath"]');
             const lowInput = html.find('input[name="flags.adaptive-audio.lowIntensityPath"]');
+            const nameInput = html.find('input[name="name"]');
             
-            // Only update if currently empty to avoid overwriting user choices
             // Only update if currently empty to avoid overwriting user choices
             if (midInput.val() === "" && lowInput.val() === "") {
                 // Generate new paths (with spaces initially)
@@ -143,6 +143,17 @@ export function injectSoundConfig(app, html, data) {
                 midInput.trigger('change');
                 lowInput.trigger('change');
                 
+                // Auto-Name Logic: Use parent directory name
+                // path is already decoded here
+                const parts = path.split('/');
+                if (parts.length >= 2) {
+                    const parentDir = parts[parts.length - 2];
+                    if (parentDir && nameInput.length) {
+                        debug(`Auto-naming track to: ${parentDir}`);
+                        nameInput.val(parentDir);
+                    }
+                }
+
                 ui.notifications.info("Adaptive Audio: Auto-detected Ovani layers");
                 debug("Auto-detected Ovani layers:", newMidPath, newLowPath);
             } else {
